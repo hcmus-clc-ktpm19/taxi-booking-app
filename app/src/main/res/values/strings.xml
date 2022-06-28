@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">Wiber Driver</string>
+    <string name="phone_number_label">Phone number</string>
+    <string name="email_address_label">Email address</string>
+    <string name="password_label">Password</string>
+    <string name="confirm_password_label">Confirm password</string>
+    <string name="signin_label">Sign in</string>
+    <string name="create_account_label">Create an account</string>
+    <string name="sign_up_label">Sign up</string>
+    <string name="sign_up_fb_label">Sign up with facebook</string>
+    <string name="sign_up_google_label">Sign up with google</string>
+    <string name="already_has_an_account_label">Already has an account?</string>
 </resources>
