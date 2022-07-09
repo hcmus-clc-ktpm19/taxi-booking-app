@@ -1,18 +1,32 @@
 package com.example.wiberdriver
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.wiberdriver.fragments.SignInFragment
+import androidx.lifecycle.ViewModelProvider
+import com.example.wiberdriver.databinding.ActivitySigninBinding
+import com.example.wiberdriver.viewmodels.SignInViewModel
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding : ActivitySigninBinding
+    private lateinit var loginviewModel: SignInViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_main_container, SignInFragment())
-            .commit();
+        binding = ActivitySigninBinding.inflate(layoutInflater)
 
-        supportActionBar?.hide()
+        setContentView(binding.root)
+
+        loginviewModel = ViewModelProvider(this).get(SignInViewModel::class.java)
+
+        loginviewModel.phoneNumberText.observe(this){
+            binding.phoneNumberInputLayout.editText?.setText(it)
+        }
+
+
+        loginviewModel.passwordText.observe(this){
+            binding.paswordInputText.editText?.setText(it)
+        }
     }
 }

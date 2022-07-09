@@ -4,8 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".activities.SigninActivity"
     android:background="@color/primary_color"
-    tools:context=".fragments.SignInFragment">
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/getStartedLable"
@@ -19,41 +20,41 @@
         android:textSize="28dp" />
 
     <LinearLayout
-        android:layout_marginVertical="20dp"
-        android:layout_below="@+id/getStartedLable"
         android:id="@+id/phoneNumberContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/getStartedLable"
+        android:layout_marginVertical="20dp"
         android:orientation="vertical">
 
         <TextView
-            android:layout_marginBottom="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginBottom="8dp"
             android:text="@string/phone_number_label"
             android:textAllCaps="true"
             android:textColor="@color/white"
-            android:textSize="17dp"
-            android:layout_marginLeft="20dp"/>
+            android:textSize="17dp" />
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/phoneNumberInputLayout"
             android:layout_width="match_parent"
-            android:layout_height="42dp"
-            app:hintEnabled="false"
+            android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
             app:boxStrokeWidth="0dp"
             app:boxStrokeWidthFocused="0dp"
-            android:id="@+id/phoneNumberInputText"
-            >
+            app:hintEnabled="false">
+
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
 
                 android:layout_height="wrap_content"
-                app:hintEnabled="false"
+                android:background="@drawable/inputtextfileoutline"
                 android:paddingTop="16dp"
                 android:textColor="@color/white"
-                android:background="@drawable/inputtextfileoutline"
-                >
+                app:hintEnabled="false">
+
             </com.google.android.material.textfield.TextInputEditText>
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -80,7 +81,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/paswordInputText"
             android:layout_width="match_parent"
-            android:layout_height="42dp"
+            android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
             app:boxStrokeWidth="0dp"
             app:boxStrokeWidthFocused="0dp"
