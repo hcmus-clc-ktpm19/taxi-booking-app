@@ -30,4 +30,5 @@
     <string name="confirm_request">Confirm Request</string>
     <string name="name_label">Name</string>
     <string name="new_password">New password</string>
+    <string name="total_balance">Total Balance</string>
 </resources>
