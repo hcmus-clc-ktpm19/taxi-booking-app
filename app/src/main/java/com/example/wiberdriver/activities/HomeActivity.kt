@@ -52,10 +52,10 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                     startActivity(Intent(this, HomeActivity::class.java))
                     finish()
                 }
-//                R.id.nav_profile -> {
-//                    val intent = Intent(this, ProfileActivity::class.java)
-//                    startActivity(intent)
-//                }
+                R.id.nav_profile -> {
+                    val intent = Intent(this, ProfileActivity::class.java)
+                    startActivity(intent)
+                }
 //                R.id.nav_payment_method -> {
 //                    val intent = Intent(this, PaymentMethodActivity::class.java)
 //                    startActivity(intent)
@@ -82,24 +82,10 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
     @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-
         // Add a marker at current user location and move the camera
         mMap.uiSettings.isZoomControlsEnabled = false
-//        mMap.isMyLocationEnabled = true
         setUpMap()
 
-//        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
-//            if (location != null) {
-//                val currentLatLng = LatLng(location.latitude, location.longitude)
-//                Log.i("info", "current location: $currentLatLng")
-//                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
-//                mMap.addMarker(
-//                    com.google.android.gms.maps.model.MarkerOptions()
-//                        .position(currentLatLng)
-//                        .title("You are here")
-//                )
-//            }
-//        }
     }
 
     private fun setUpMap() {
