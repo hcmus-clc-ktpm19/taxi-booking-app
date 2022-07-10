@@ -16,6 +16,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WiberDriver.NoActionBar">
         <activity
+            android:name=".activities.HistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.PaymentMethodActivity"
             android:exported="false" />
         <activity

@@ -60,9 +60,9 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                     val intent = Intent(this, PaymentMethodActivity::class.java)
                     startActivity(intent)
                 }
-//                R.id.nav_history -> {
-//                    startActivity(Intent(this,HistoryActivity::class.java))
-//                }
+                R.id.nav_history -> {
+                    startActivity(Intent(this,HistoryActivity::class.java))
+                }
             }
             drawerLayout.closeDrawers()
             true
