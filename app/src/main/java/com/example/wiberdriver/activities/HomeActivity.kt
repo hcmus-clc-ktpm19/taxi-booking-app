@@ -56,10 +56,10 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                     val intent = Intent(this, ProfileActivity::class.java)
                     startActivity(intent)
                 }
-//                R.id.nav_payment_method -> {
-//                    val intent = Intent(this, PaymentMethodActivity::class.java)
-//                    startActivity(intent)
-//                }
+                R.id.nav_payment_method -> {
+                    val intent = Intent(this, PaymentMethodActivity::class.java)
+                    startActivity(intent)
+                }
 //                R.id.nav_history -> {
 //                    startActivity(Intent(this,HistoryActivity::class.java))
 //                }

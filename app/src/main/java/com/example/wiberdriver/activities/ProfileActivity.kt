@@ -15,5 +15,9 @@ class ProfileActivity : AppCompatActivity() {
         binding = ActivityProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
         profileViewModel = ViewModelProvider(this)[ProfileViewModel::class.java]
+
+        binding.toolbar.setNavigationOnClickListener {
+            finish()
+        }
     }
 }
