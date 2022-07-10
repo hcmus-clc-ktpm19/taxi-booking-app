@@ -28,4 +28,6 @@
     <string name="add_new_payment_method">Add New Payment Method</string>
     <string name="payment_method">Payment Method</string>
     <string name="confirm_request">Confirm Request</string>
+    <string name="name_label">Name</string>
+    <string name="new_password">New password</string>
 </resources>
