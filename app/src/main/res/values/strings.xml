@@ -20,10 +20,12 @@
     <string name="choose_payment_method">Select Payment</string>
     <string name="enter_promo_code">Promo Code</string>
     <string name="thank_you">Thank You \n For Your Confirmation!</string>
+    <string name="confirm_request_question">Confirm?</string>
     <string name="name">Name</string>
     <string name="card_number">Card Number</string>
     <string name="since_date">Since Date</string>
     <string name="submit">Submit</string>
     <string name="add_new_payment_method">Add New Payment Method</string>
     <string name="payment_method">Payment Method</string>
+    <string name="confirm_request">Confirm Request</string>
 </resources>
