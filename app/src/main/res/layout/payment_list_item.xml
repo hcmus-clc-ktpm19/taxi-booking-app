@@ -37,7 +37,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="1.0"
-                app:srcCompat="@color/material_dynamic_secondary60" />
+                android:background= "#8094A0"/>
 
             <ImageView
                 android:id="@+id/Payment_CardType_IV"
