@@ -14,19 +14,19 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        binding = ActivitySigninBinding.inflate(layoutInflater)
-
-        setContentView(binding.root)
-
-        loginviewModel = ViewModelProvider(this).get(SignInViewModel::class.java)
-
-        loginviewModel.phoneNumberText.observe(this){
-            binding.phoneNumberInputLayout.editText?.setText(it)
-        }
-
-
-        loginviewModel.passwordText.observe(this){
-            binding.paswordInputText.editText?.setText(it)
-        }
+//        binding = ActivitySigninBinding.inflate(layoutInflater)
+//
+//        setContentView(binding.root)
+//
+//        loginviewModel = ViewModelProvider(this).get(SignInViewModel::class.java)
+//
+//        loginviewModel.phoneNumberText.observe(this){
+//            binding.phoneNumberInputLayout.editText?.setText(it)
+//        }
+//
+//
+//        loginviewModel.passwordText.observe(this){
+//            binding.password.editText?.setText(it)
+//        }
     }
 }
