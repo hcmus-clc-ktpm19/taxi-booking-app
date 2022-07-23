@@ -21,7 +21,7 @@ import retrofit2.Response
 class SigninActivity : AppCompatActivity() {
 
     companion object{
-        lateinit var authCustomerTokenFromSignIn: AuthToken
+        lateinit var authDriverTokenFromSignIn: AuthToken
         lateinit var phoneNumberLoginFromSignIn: String
     }
 
@@ -58,12 +58,12 @@ class SigninActivity : AppCompatActivity() {
             override fun onResponse(call: Call<AuthToken>, response: Response<AuthToken>) {
                 if (response.isSuccessful)
                 {
-                    authCustomerTokenFromSignIn = response.body()!!
+                    authDriverTokenFromSignIn = response.body()!!
                     phoneNumberLoginFromSignIn = phoneNumber
                     GlobalScope.launch {
                         val accountDetail = AuthService.authService.getAccountDetail(
                             phoneNumberLoginFromSignIn,
-                            "Bearer ${authCustomerTokenFromSignIn.accessToken}"
+                            "Bearer ${authDriverTokenFromSignIn.accessToken}"
                         )
                         if (!accountDetail.role.equals(roleEnum.DRIVER))
                         {

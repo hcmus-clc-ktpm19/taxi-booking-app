@@ -62,7 +62,6 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Hoang Huu Giap"
                 android:textColor="@color/black">
             </com.google.android.material.textfield.TextInputEditText>
 
@@ -87,7 +86,7 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="1234"
+                android:enabled="false"
                 android:textColor="@color/black">
             </com.google.android.material.textfield.TextInputEditText>
 
@@ -111,7 +110,6 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/new_password"
                 android:textColor="@color/black">
 
             </com.google.android.material.textfield.TextInputEditText>
