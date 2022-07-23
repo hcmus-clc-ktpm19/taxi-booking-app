@@ -53,7 +53,7 @@ class SigninActivity : AppCompatActivity() {
     }
 
     fun signInGetToken(phoneNumber: String, password:String){
-        AuthService.authService.loginAsCustomer(phoneNumber, password).enqueue(object :
+        AuthService.authService.loginThroughAPI(phoneNumber, password).enqueue(object :
             Callback<AuthToken> {
             override fun onResponse(call: Call<AuthToken>, response: Response<AuthToken>) {
                 if (response.isSuccessful)

@@ -15,7 +15,7 @@ interface AuthService {
 
     @FormUrlEncoded
     @POST("auth/login")
-    fun loginAsCustomer(@Field("phone") phone: String,@Field("password") password : String): Call<AuthToken>
+    fun loginThroughAPI(@Field("phone") phone: String,@Field("password") password : String): Call<AuthToken>
 
     @GET("auth")
     suspend fun getAccountDetail(@Query("q") phoneNumber : String, @Header("Authorization") accessToken : String): Account
