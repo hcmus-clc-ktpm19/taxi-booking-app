@@ -71,6 +71,11 @@ class ProfileActivity : AppCompatActivity() {
                                     accountDetail.id, accountDetail,
                                     "Bearer ${authDriverTokenFromSignIn.accessToken}"
                                 )
+                                val customerUpdate = DriverInfo(
+                                    accountDetail.id, phoneNumberLoginFromSignIn,
+                                    nameLayout.editText!!.text.toString(), roleEnum.CUSTOMER
+                                )
+                                updateDriverInfo(customerUpdate)
                             } catch (e: Exception) {
                                 alertDialog.dismiss()
                                 Handler(Looper.getMainLooper()).post {
@@ -82,12 +87,15 @@ class ProfileActivity : AppCompatActivity() {
                                 }
                             }
                         }
+                        else
+                        {
+                            val customerUpdate = DriverInfo(
+                                accountDetail.id, phoneNumberLoginFromSignIn,
+                                nameLayout.editText!!.text.toString(), roleEnum.CUSTOMER
+                            )
+                            updateDriverInfo(customerUpdate)
+                        }
 
-                        val customerUpdate = DriverInfo(
-                            accountDetail.id, phoneNumberLoginFromSignIn,
-                            nameLayout.editText!!.text.toString(), roleEnum.CUSTOMER
-                        )
-                        updateDriverInfo(customerUpdate)
                     }
                     else
                         Handler(Looper.getMainLooper()).post {
