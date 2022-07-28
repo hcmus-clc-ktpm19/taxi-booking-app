@@ -6,12 +6,14 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.wiberdriver.api.AuthService
 import com.example.wiberdriver.databinding.ActivitySigninBinding
 import com.example.wiberdriver.models.AuthToken
 import com.example.wiberdriver.models.roleEnum
 import com.example.wiberdriver.viewmodels.SignInViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -45,46 +47,49 @@ class SigninActivity : AppCompatActivity() {
         binding.signinbtn.setOnClickListener {
             val phoneNumber = phoneIL.editText?.text.toString()
             val password = passwordIL.editText?.text.toString()
-            signInGetToken(phoneNumber, password)
+            loginviewModel.signInGetToken(phoneNumber, password)
         }
+        val statusObserver = Observer<String>{ status ->
+            when (status) {
+                "This account is not a driver" -> {
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("Error")
+                        .setMessage("This account is not a driver")
+                        .setPositiveButton("OK") { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                }
+                "Wrong phone number or password" -> {
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("Error")
+                        .setMessage("Invalid phone number or password")
+                        .setPositiveButton("OK") { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                }
+                "Success" -> {
+                    startActivity(Intent(this@SigninActivity, HomeActivity::class.java))
+                }
+                else -> {
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("Error")
+                        .setMessage(status)
+                        .setPositiveButton("OK") { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                }
+            }
+        }
+        loginviewModel.status.observe(this, statusObserver)
+
         binding.signupbtn.setOnClickListener {
+            //driver can't create account on their own
+            //this is for test only
             startActivity(Intent(this@SigninActivity, SignupActivity::class.java))
         }
     }
 
-    fun signInGetToken(phoneNumber: String, password:String){
-        AuthService.authService.loginThroughAPI(phoneNumber, password).enqueue(object :
-            Callback<AuthToken> {
-            override fun onResponse(call: Call<AuthToken>, response: Response<AuthToken>) {
-                if (response.isSuccessful)
-                {
-                    authDriverTokenFromSignIn = response.body()!!
-                    phoneNumberLoginFromSignIn = phoneNumber
-                    GlobalScope.launch {
-                        val accountDetail = AuthService.authService.getAccountDetail(
-                            phoneNumberLoginFromSignIn,
-                            "Bearer ${authDriverTokenFromSignIn.accessToken}"
-                        )
-                        if (!accountDetail.role.equals(roleEnum.DRIVER))
-                        {
-                            Handler(Looper.getMainLooper()).post {
-                                Toast.makeText(this@SigninActivity, "This account is not a driver", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                        else
-                            startActivity(Intent(this@SigninActivity, HomeActivity::class.java))
-                    }
-                }
-                else
-                {
-                    Toast.makeText(this@SigninActivity, "Wrong phone number or password", Toast.LENGTH_LONG).show()
-                }
-            }
-
-            override fun onFailure(call: Call<AuthToken>, t: Throwable) {
-                Toast.makeText(this@SigninActivity, t.toString(), Toast.LENGTH_LONG).show()
-            }
-
-        })
-    }
 }
