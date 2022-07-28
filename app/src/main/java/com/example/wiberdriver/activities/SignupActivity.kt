@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.wiberdriver.api.AuthService
 import com.example.wiberdriver.databinding.ActivitySignupBinding
@@ -42,41 +43,25 @@ class SignupActivity : AppCompatActivity() {
             else
             {
                 val newCustomer = Account("", phoneNumber, password)
-                registerNewCustomer(newCustomer)
+                signUpviewModel.registerNewCustomer(newCustomer)
             }
         }
+
+        val statusObserver = Observer<String>{ status ->
+            when (status) {
+                "Create account successfully" -> {
+                    Toast.makeText(this@SignupActivity, status, Toast.LENGTH_LONG).show()
+                    finish()
+                }
+                else -> {
+                    Toast.makeText(this@SignupActivity, status, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+        signUpviewModel.status.observe(this, statusObserver)
 
         binding.signinbtn.setOnClickListener {
             finish()
         }
-    }
-
-    fun registerNewCustomer(account: Account)
-    {
-        AuthService.authService.registerCustomer(account).enqueue(object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
-                if (response.isSuccessful)
-                {
-                    Toast.makeText(this@SignupActivity, "Create account successfully",Toast.LENGTH_LONG).show()
-                    finish()
-                }
-                else
-                {
-                    val dataFromResponse = response.errorBody()?.string()
-                    val responseToJSON = JSONObject(dataFromResponse.toString())
-                    if (responseToJSON.has("Error-Message"))
-                        Toast.makeText(this@SignupActivity, responseToJSON.getString("Error-Message").toString(),Toast.LENGTH_LONG).show()
-                    else if (responseToJSON.has("phone"))
-                        Toast.makeText(this@SignupActivity, responseToJSON.getString("phone").toString(),Toast.LENGTH_LONG).show()
-                    else if (responseToJSON.has("password"))
-                        Toast.makeText(this@SignupActivity, responseToJSON.getString("password").toString(),Toast.LENGTH_LONG).show()
-                }
-            }
-
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                Toast.makeText(this@SignupActivity, t.toString(),Toast.LENGTH_LONG).show()
-            }
-
-        })
     }
 }
