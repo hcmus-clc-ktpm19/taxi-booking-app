@@ -27,6 +27,8 @@
                 app:popupTheme="@style/Theme.WiberDriver.PopupOverlay" />
 
         </com.google.android.material.appbar.AppBarLayout>
+
+
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_height="match_parent"
@@ -43,6 +45,18 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <Button
+            android:id="@+id/test_socket_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="24dp"
+            android:text="Test Send Message To Server"
+            app:layout_constraintBottom_toBottomOf="@+id/map"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.navigation.NavigationView
@@ -53,4 +67,6 @@
         android:fitsSystemWindows="true"
         app:headerLayout="@layout/nav_header_navigation"
         app:menu="@menu/activity_homepage_drawer" />
+
+
 </androidx.drawerlayout.widget.DrawerLayout>
