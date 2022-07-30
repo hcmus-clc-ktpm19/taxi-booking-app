@@ -1,10 +1,13 @@
 package com.example.wiberdriver.models
 
 class CarRequest(
-    val customerId: String,
-    val customerPhone: String,
-    val pickingAddress: String,
-    val lngPickingAddress: String,
-    val latPickingAddress: String
+    var id: String?,
+    var customerId: String,
+    var pickingAddress: String,
+    var arrivingAddress: String,
+    var lngPickingAddress: Double,
+    var latPickingAddress: Double,
+    var lngArrivingAddress: Double,
+    var latArrivingAddress: Double,
 ) {
 }

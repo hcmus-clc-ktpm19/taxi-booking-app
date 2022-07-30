@@ -10,7 +10,7 @@ object Const {
      * If you are using Genymotion, nothing else to do.
      * If you are using your own phone, just change the server address and port.
      */
-    const val address = "ws://10.0.2.2:8080/im/websocket"
+    const val address = "ws://10.0.2.2:8082/im/websocket"
 //	public static final String address = "ws://10.0.3.2:8080/im/websocket";
 
     //	public static final String address = "ws://10.0.3.2:8080/im/websocket";
