@@ -1,17 +1,12 @@
 package com.example.wiberdriver.viewmodels
 
-import android.content.Intent
-import android.os.Handler
-import android.os.Looper
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.wiberdriver.activities.HomeActivity
 import com.example.wiberdriver.activities.SigninActivity
 import com.example.wiberdriver.api.AuthService
-import com.example.wiberdriver.models.AuthToken
-import com.example.wiberdriver.models.roleEnum
+import com.example.wiberdriver.models.entity.AuthToken
+import com.example.wiberdriver.models.entity.roleEnum
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import retrofit2.Call

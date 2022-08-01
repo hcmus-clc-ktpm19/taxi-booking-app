@@ -1,7 +1,7 @@
 package com.example.wiberdriver.api
 
-import com.example.wiberdriver.models.AuthToken
-import com.example.wiberdriver.models.Account
+import com.example.wiberdriver.models.entity.AuthToken
+import com.example.wiberdriver.models.entity.Account
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Retrofit

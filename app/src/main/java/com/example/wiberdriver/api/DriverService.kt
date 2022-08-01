@@ -1,6 +1,6 @@
 package com.example.wiberdriver.api
 
-import com.example.wiberdriver.models.DriverInfo
+import com.example.wiberdriver.models.entity.DriverInfo
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Retrofit

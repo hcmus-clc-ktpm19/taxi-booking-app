@@ -1,20 +1,13 @@
 package com.example.wiberdriver.activities
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.example.wiberdriver.api.AuthService
 import com.example.wiberdriver.databinding.ActivitySignupBinding
-import com.example.wiberdriver.models.Account
+import com.example.wiberdriver.models.entity.Account
 import com.example.wiberdriver.viewmodels.SignUpViewModel
-import okhttp3.ResponseBody
-import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class SignupActivity : AppCompatActivity() {
 

@@ -1,4 +1,4 @@
-package com.example.wiberdriver.models
+package com.example.wiberdriver.models.entity
 
 enum class roleEnum {
     CUSTOMER,

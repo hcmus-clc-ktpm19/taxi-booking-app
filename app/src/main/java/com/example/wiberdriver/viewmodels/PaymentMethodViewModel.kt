@@ -1,7 +1,7 @@
 package com.example.wiberdriver.viewmodels
 
 import androidx.lifecycle.ViewModel
-import com.example.wiberdriver.models.Payment
+import com.example.wiberdriver.models.entity.Payment
 import java.util.*
 import kotlin.collections.ArrayList
 

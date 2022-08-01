@@ -10,7 +10,7 @@ import android.widget.*
 import androidx.lifecycle.ViewModelProvider
 import com.example.wiberdriver.R
 import com.example.wiberdriver.databinding.ActivityAddNewPaymentBinding
-import com.example.wiberdriver.models.Payment
+import com.example.wiberdriver.models.entity.Payment
 import com.example.wiberdriver.viewmodels.AddNewPaymentViewModel
 import com.google.android.material.appbar.MaterialToolbar
 import java.util.*

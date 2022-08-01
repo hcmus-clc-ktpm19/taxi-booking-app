@@ -1,11 +1,10 @@
 package com.example.wiberdriver.viewmodels
 
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.wiberdriver.api.AuthService
-import com.example.wiberdriver.models.Account
+import com.example.wiberdriver.models.entity.Account
 import okhttp3.ResponseBody
 import org.json.JSONObject
 import retrofit2.Call
