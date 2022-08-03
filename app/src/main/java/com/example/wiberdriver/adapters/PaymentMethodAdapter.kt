@@ -8,7 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wiberdriver.R
-import com.example.wiberdriver.models.Payment
+import com.example.wiberdriver.models.entity.Payment
 
 class PaymentMethodAdapter(private val payments:ArrayList<Payment>?): RecyclerView.Adapter<PaymentMethodAdapter.ViewHolder>() {
     inner class ViewHolder(listItemView: View): RecyclerView.ViewHolder(listItemView){

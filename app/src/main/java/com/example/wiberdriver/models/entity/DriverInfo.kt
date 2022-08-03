@@ -1,4 +1,4 @@
-package com.example.wiberdriver.models
+package com.example.wiberdriver.models.entity
 
 class DriverInfo  (
     var id: String,

@@ -3,7 +3,7 @@ package com.example.wiberdriver.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.wiberdriver.models.History
+import com.example.wiberdriver.models.entity.History
 
 class HistoryViewModel : ViewModel() {
 

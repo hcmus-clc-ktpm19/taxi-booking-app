@@ -3,12 +3,10 @@ package com.example.wiberdriver.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wiberdriver.R
-import com.example.wiberdriver.models.History
+import com.example.wiberdriver.models.entity.History
 import com.google.android.material.textfield.TextInputLayout
 
 class HistoryAdapter(internal var historyList: List<History>) : RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
