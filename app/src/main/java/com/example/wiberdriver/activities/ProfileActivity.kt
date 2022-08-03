@@ -29,7 +29,7 @@ class ProfileActivity : AppCompatActivity() {
         val nameLayout = binding.nameInputLayout
         val newPasswordLayout = binding.newPasswordInputLayout
 
-        profileViewModel = ViewModelProvider(this).get(ProfileViewModel::class.java)
+        profileViewModel = ViewModelProvider(this)[ProfileViewModel::class.java]
 
         setSupportActionBar(binding.toolbar)
         binding.toolbar.setNavigationOnClickListener {

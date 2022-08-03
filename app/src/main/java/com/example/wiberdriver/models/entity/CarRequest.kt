@@ -1,7 +1,7 @@
 package com.example.wiberdriver.models.entity
 
 class CarRequest(
-    var id: String,
+    var id: String?,
     var customerId: String,
     var customerPhone: String,
     var pickingAddress: String,

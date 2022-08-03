@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.wiberdriver.R
 import com.example.wiberdriver.databinding.ActivityHomeBinding
@@ -48,6 +49,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mMap: GoogleMap
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var startLocation: LatLng
+    private lateinit var carRequest: CarRequest
 
     // bottom sheet
     private lateinit var bottomLayout :LinearLayout
@@ -102,6 +104,9 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             drawerLayout.closeDrawers()
             true
         }
+//        homeViewModel.carRequestValue.observe(this){
+//            carRequest = it
+//        }
 
         //map
         val supportMapFragment: SupportMapFragment =
@@ -124,11 +129,13 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         Log.i(Const.TAG, "Subscribe broadcast endpoint to receive response")
         stompClient.topic(Const.broadcastResponse).subscribe { stompMessage: StompMessage ->
             val jsonObject = JSONObject(stompMessage.payload)
-            Log.i(Const.TAG, "Receive: " + stompMessage.payload)
+            carRequest = Gson().fromJson(jsonObject.getString("carRequestDto"), CarRequest::class.java)
+            Log.i(TAG, "Receive: " + stompMessage.payload)
+            Log.i("convert", carRequest.id!! + " " + carRequest.customerId + " " + carRequest.arrivingAddress)
             runOnUiThread {
                 try {
-                    val latCustomer = jsonObject.getDouble("latPickingAddress")
-                    val lngCustomer = jsonObject.getDouble("lngPickingAddress")
+                    val latCustomer = carRequest.latArrivingAddress
+                    val lngCustomer = carRequest.lngArrivingAddress
                     if (latCustomer != null && lngCustomer != null) {
                         val results = FloatArray(1)
                         startLocation = LatLng(latCustomer, lngCustomer)
@@ -140,8 +147,8 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                         if (distance < 5000.0) {
                             if (!this.isFinishing) {
                                 if(bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED){
-                                    fromLayout.editText?.setText("Not yet")
-                                    toWhereLayout.editText?.setText("Not yet")
+                                    fromLayout.editText?.setText(carRequest.pickingAddress)
+                                    toWhereLayout.editText?.setText(carRequest.arrivingAddress)
                                     distanceLayout.editText?.setText("Not yet")
                                     moneyLayout.editText?.setText("Not yet")
                                     bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -163,40 +170,26 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                 .setPositiveButton("OK") { dialog, which ->
                     // send rest api to server that accept the car request
                     dialog.dismiss()
-                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                    carRequest.status = CarRequestStatus.ACCEPTED.name
+                    homeViewModel.acceptTheCarRequest(carRequest)
                 }
                 .setNegativeButton("Cancel") { dialog, which ->
                     dialog.dismiss()
                 }
                 .show()
         }
-        binding.testSocketButton.setOnClickListener { v ->
-            var jsonObject: String? = null
-            val testCarRequest = CarRequest(
-                "ID req 1234", "62e1dc2eb7b9de371343194e", "0123456789", "Khoa hoc tu nhien",
-                "Benh vien tu du", 106.6832, 10.7685,
-                107.2153, 10.666, CarRequestStatus.WAITING.status
-            )
-            try {
-                jsonObject = Gson().toJson(testCarRequest)
-            } catch (e: JSONException) {
-                Log.d(TAG, "JSONException: " + e.message)
+        val acceptCarRequestStatusObserver = Observer<String>{ status ->
+            when(status){
+                "Accept car request successfully" -> {
+                    Toast.makeText(this, "Accept the request successfully", Toast.LENGTH_SHORT).show()
+                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                }
+                else -> {
+                    Toast.makeText(this, "Accept the request failed", Toast.LENGTH_SHORT).show()
+                }
             }
-            stompClient.send(
-                StompMessage( // Stomp command
-                    StompCommand.SEND,  // Stomp Headers, Send Headers with STOMP
-                    // the first header is required, and the other can be customized by ourselves
-                    Arrays.asList(
-                        StompHeader(StompHeader.DESTINATION, Const.broadcast),
-                        StompHeader(
-                            "authorization",
-                            "this is a token generated by your code!"
-                        )
-                    ),  // Stomp payload
-                    jsonObject.toString()
-                )
-            ).subscribe()
         }
+        homeViewModel.acceptCarRequestStatus.observe(this, acceptCarRequestStatusObserver)
     }
 
     @SuppressLint("MissingPermission")
