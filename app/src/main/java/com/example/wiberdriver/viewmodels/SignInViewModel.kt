@@ -4,9 +4,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.wiberdriver.activities.SigninActivity
+import com.example.wiberdriver.activities.SigninActivity.Companion.accountDriverFromSignIn
 import com.example.wiberdriver.api.AuthService
+import com.example.wiberdriver.models.entity.Account
 import com.example.wiberdriver.models.entity.AuthToken
 import com.example.wiberdriver.models.entity.roleEnum
+import com.example.wiberdriver.models.enums.CarRequestStatus
+import com.example.wiberdriver.states.freeDriverState
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -26,8 +30,9 @@ class SignInViewModel : ViewModel() {
 
     val passwordText : LiveData<String> = _passwordText
 
+
     var status = MutableLiveData<String>()
-    fun signInGetToken(phoneNumber: String, password:String){
+    fun signInGetToken(phoneNumber: String, password:String) {
         AuthService.authService.loginThroughAPI(phoneNumber, password).enqueue(object :
             Callback<AuthToken> {
             override fun onResponse(call: Call<AuthToken>, response: Response<AuthToken>) {
@@ -45,7 +50,12 @@ class SignInViewModel : ViewModel() {
                             status.postValue("This account is not a driver")
                         }
                         else
+                        {
+                            accountDriverFromSignIn = accountDetail
+                            accountDriverFromSignIn.setRequestState(freeDriverState())
+                            accountDriverFromSignIn.driverStatus = CarRequestStatus.FREE.status
                             status.postValue("Success")
+                        }
                     }
                 }
                 else
