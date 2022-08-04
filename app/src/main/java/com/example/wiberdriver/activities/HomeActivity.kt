@@ -6,6 +6,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Button
 import android.widget.LinearLayout
@@ -16,8 +18,13 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.wiberdriver.R
+import com.example.wiberdriver.activities.SigninActivity.Companion.accountDriverFromSignIn
+import com.example.wiberdriver.activities.SigninActivity.Companion.authDriverTokenFromSignIn
+import com.example.wiberdriver.activities.SigninActivity.Companion.phoneNumberLoginFromSignIn
+import com.example.wiberdriver.api.DriverService
 import com.example.wiberdriver.databinding.ActivityHomeBinding
 import com.example.wiberdriver.models.entity.CarRequest
+import com.example.wiberdriver.models.entity.DriverInfo
 import com.example.wiberdriver.models.enums.CarRequestStatus
 import com.example.wiberdriver.utils.Const
 import com.example.wiberdriver.utils.Const.TAG
@@ -30,10 +37,15 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PolylineOptions
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import ua.naiksoftware.stomp.Stomp
@@ -50,6 +62,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var startLocation: LatLng
     private lateinit var carRequest: CarRequest
+    internal var destinationLocationMarker: Marker? = null
 
     // bottom sheet
     private lateinit var bottomLayout :LinearLayout
@@ -85,10 +98,6 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         actionBarDrawerToggle.syncState()
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.nav_home -> {
-                    startActivity(Intent(this, HomeActivity::class.java))
-                    finish()
-                }
                 R.id.nav_profile -> {
                     val intent = Intent(this, ProfileActivity::class.java)
                     startActivity(intent)
@@ -112,7 +121,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         val supportMapFragment: SupportMapFragment =
             supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         // async map
-        Log.i("info", "async map")
+        Log.i("namedriver", accountDriverFromSignIn.phone)
         supportMapFragment.getMapAsync(this)
 
         fusedLocationProviderClient =
@@ -125,7 +134,6 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         // Connect to WebSocket server
         stompClient.connect()
 
-        // 订阅消息
         Log.i(Const.TAG, "Subscribe broadcast endpoint to receive response")
         stompClient.topic(Const.broadcastResponse).subscribe { stompMessage: StompMessage ->
             val jsonObject = JSONObject(stompMessage.payload)
@@ -134,17 +142,16 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             Log.i("convert", carRequest.id!! + " " + carRequest.customerId + " " + carRequest.arrivingAddress)
             runOnUiThread {
                 try {
-                    val latCustomer = carRequest.latArrivingAddress
-                    val lngCustomer = carRequest.lngArrivingAddress
+                    val latCustomer = carRequest.latPickingAddress
+                    val lngCustomer = carRequest.lngPickingAddress
                     if (latCustomer != null && lngCustomer != null) {
                         val results = FloatArray(1)
-                        startLocation = LatLng(latCustomer, lngCustomer)
                         Location.distanceBetween(
                             startLocation.latitude, startLocation.longitude,
                             latCustomer, lngCustomer, results
                         )
                         val distance = results[0]
-                        if (distance < 5000.0) {
+                        if (distance < 1000.0 && accountDriverFromSignIn.isFree()) {
                             if (!this.isFinishing) {
                                 if(bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED){
                                     fromLayout.editText?.setText(carRequest.pickingAddress)
@@ -161,23 +168,69 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }
+
         rejectRequestBtn.setOnClickListener {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         }
+
         acceptRequestBtn.setOnClickListener {
             MaterialAlertDialogBuilder(this).setTitle("Accept Request")
                 .setMessage("Are you sure to accept this request?")
                 .setPositiveButton("OK") { dialog, which ->
                     // send rest api to server that accept the car request
-                    dialog.dismiss()
-                    carRequest.status = CarRequestStatus.ACCEPTED.name
-                    homeViewModel.acceptTheCarRequest(carRequest)
+                    GlobalScope.launch {
+                        try {
+                            val driverInfo = DriverService.driverService.getAPIDriverInfoSuspend(
+                                phoneNumberLoginFromSignIn,
+                                "Bearer ${authDriverTokenFromSignIn.accessToken}"
+                            )
+                            Handler(Looper.getMainLooper()).post {
+                                dialog.dismiss()
+                                accountDriverFromSignIn.nextStatusRequest()
+                                carRequest.status = CarRequestStatus.ACCEPTED.name
+                                homeViewModel.acceptTheCarRequest(carRequest)
+                                if (destinationLocationMarker != null) {
+                                    mMap.clear()
+                                    mMap.addMarker(
+                                        MarkerOptions()
+                                            .position(startLocation)
+                                            .title("You are here")
+                                    )
+                                    destinationLocationMarker!!.remove()
+                                }
+                                val customerLocation = LatLng(
+                                    carRequest.latPickingAddress,
+                                    carRequest.lngPickingAddress
+                                )
+                                destinationLocationMarker = mMap.addMarker(
+                                    MarkerOptions().position(customerLocation).title("Destination")
+                                )
+                                homeViewModel.getDirectionAndDistance(
+                                    startLocation,
+                                    customerLocation
+                                )
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(customerLocation))
+                                mMap.animateCamera(CameraUpdateFactory.zoomTo(15f))
+                            }
+
+                        }
+                        catch (e:Exception){
+                            Handler(Looper.getMainLooper()).post {
+                                Toast.makeText(
+                                    this@HomeActivity,
+                                    "Please input name in profile",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }
                 }
                 .setNegativeButton("Cancel") { dialog, which ->
                     dialog.dismiss()
                 }
                 .show()
         }
+
         val acceptCarRequestStatusObserver = Observer<String>{ status ->
             when(status){
                 "Accept car request successfully" -> {
@@ -195,6 +248,11 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
     @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        homeViewModel.geoPoint.observe(this) {
+            val polylineOptions = PolylineOptions()
+            polylineOptions.addAll(it)
+            mMap.addPolyline(polylineOptions)
+        }
         // Add a marker at current user location and move the camera
         mMap.uiSettings.isZoomControlsEnabled = false
         setUpMap()

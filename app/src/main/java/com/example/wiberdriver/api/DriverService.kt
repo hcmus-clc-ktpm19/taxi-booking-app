@@ -12,6 +12,9 @@ interface DriverService {
     @GET("driver/{phone}")
     fun getAPIDriverInfo(@Path("phone") phoneNumber : String, @Header("Authorization") accessToken : String): Call<DriverInfo>
 
+    @GET("driver/{phone}")
+    suspend fun getAPIDriverInfoSuspend(@Path("phone") phoneNumber : String, @Header("Authorization") accessToken : String): DriverInfo
+
     @POST("driver/create-or-update")
     fun updateDriverInfoAPI(@Body info: DriverInfo, @Header("Authorization") accessToken : String): Call<ResponseBody>
 

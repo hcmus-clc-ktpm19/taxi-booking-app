@@ -6,7 +6,9 @@ import android.os.Bundle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.wiberdriver.databinding.ActivitySigninBinding
+import com.example.wiberdriver.models.entity.Account
 import com.example.wiberdriver.models.entity.AuthToken
+import com.example.wiberdriver.models.entity.roleEnum
 import com.example.wiberdriver.viewmodels.SignInViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -15,6 +17,7 @@ class SigninActivity : AppCompatActivity() {
     companion object{
         lateinit var authDriverTokenFromSignIn: AuthToken
         lateinit var phoneNumberLoginFromSignIn: String
+        lateinit var accountDriverFromSignIn : Account
     }
 
 
