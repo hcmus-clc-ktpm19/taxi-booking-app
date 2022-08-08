@@ -10,6 +10,7 @@ class CarRequest(
     var latPickingAddress: Double,
     var lngArrivingAddress: Double,
     var latArrivingAddress: Double,
+    var carType: String,
     var status: String
 ) {
 }

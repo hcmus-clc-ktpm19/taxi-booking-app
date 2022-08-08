@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.wiberdriver.R
 import com.example.wiberdriver.activities.SigninActivity.Companion.accountDriverFromSignIn
 import com.example.wiberdriver.activities.SigninActivity.Companion.authDriverTokenFromSignIn
+import com.example.wiberdriver.activities.SigninActivity.Companion.driverInfoFromSignIn
 import com.example.wiberdriver.activities.SigninActivity.Companion.phoneNumberLoginFromSignIn
 import com.example.wiberdriver.api.DriverService
 import com.example.wiberdriver.databinding.ActivityHomeBinding
@@ -142,23 +143,26 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             Log.i("convert", carRequest.id!! + " " + carRequest.customerId + " " + carRequest.arrivingAddress)
             runOnUiThread {
                 try {
-                    val latCustomer = carRequest.latPickingAddress
-                    val lngCustomer = carRequest.lngPickingAddress
-                    if (latCustomer != null && lngCustomer != null) {
-                        val results = FloatArray(1)
-                        Location.distanceBetween(
-                            startLocation.latitude, startLocation.longitude,
-                            latCustomer, lngCustomer, results
-                        )
-                        val distance = results[0]
-                        if (distance < 1000.0 && accountDriverFromSignIn.isFree()) {
-                            if (!this.isFinishing) {
-                                if(bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED){
-                                    fromLayout.editText?.setText(carRequest.pickingAddress)
-                                    toWhereLayout.editText?.setText(carRequest.arrivingAddress)
-                                    distanceLayout.editText?.setText("Not yet")
-                                    moneyLayout.editText?.setText("Not yet")
-                                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                    if (!driverInfoFromSignIn.name.equals("") && !driverInfoFromSignIn.id.equals(""))
+                    {
+                        val latCustomer = carRequest.latPickingAddress
+                        val lngCustomer = carRequest.lngPickingAddress
+                        if (latCustomer != null && lngCustomer != null) {
+                            val results = FloatArray(1)
+                            Location.distanceBetween(
+                                startLocation.latitude, startLocation.longitude,
+                                latCustomer, lngCustomer, results
+                            )
+                            val distance = results[0]
+                            if (distance < 1000.0 && accountDriverFromSignIn.isFree() && driverInfoFromSignIn.carType.equals(carRequest.carType)) {
+                                if (!this.isFinishing) {
+                                    if(bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED){
+                                        fromLayout.editText?.setText(carRequest.pickingAddress)
+                                        toWhereLayout.editText?.setText(carRequest.arrivingAddress)
+                                        distanceLayout.editText?.setText("Not yet")
+                                        moneyLayout.editText?.setText("Not yet")
+                                        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                                    }
                                 }
                             }
                         }
@@ -178,52 +182,32 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                 .setMessage("Are you sure to accept this request?")
                 .setPositiveButton("OK") { dialog, which ->
                     // send rest api to server that accept the car request
-                    GlobalScope.launch {
-                        try {
-                            val driverInfo = DriverService.driverService.getAPIDriverInfoSuspend(
-                                phoneNumberLoginFromSignIn,
-                                "Bearer ${authDriverTokenFromSignIn.accessToken}"
-                            )
-                            Handler(Looper.getMainLooper()).post {
-                                dialog.dismiss()
-                                accountDriverFromSignIn.nextStatusRequest()
-                                carRequest.status = CarRequestStatus.ACCEPTED.name
-                                homeViewModel.acceptTheCarRequest(carRequest)
-                                if (destinationLocationMarker != null) {
-                                    mMap.clear()
-                                    mMap.addMarker(
-                                        MarkerOptions()
-                                            .position(startLocation)
-                                            .title("You are here")
-                                    )
-                                    destinationLocationMarker!!.remove()
-                                }
-                                val customerLocation = LatLng(
-                                    carRequest.latPickingAddress,
-                                    carRequest.lngPickingAddress
-                                )
-                                destinationLocationMarker = mMap.addMarker(
-                                    MarkerOptions().position(customerLocation).title("Destination")
-                                )
-                                homeViewModel.getDirectionAndDistance(
-                                    startLocation,
-                                    customerLocation
-                                )
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(customerLocation))
-                                mMap.animateCamera(CameraUpdateFactory.zoomTo(15f))
-                            }
-
-                        }
-                        catch (e:Exception){
-                            Handler(Looper.getMainLooper()).post {
-                                Toast.makeText(
-                                    this@HomeActivity,
-                                    "Please input name in profile",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
+                    dialog.dismiss()
+                    accountDriverFromSignIn.nextStatusRequest()
+                    carRequest.status = CarRequestStatus.ACCEPTED.name
+                    homeViewModel.acceptTheCarRequest(carRequest)
+                    if (destinationLocationMarker != null) {
+                        mMap.clear()
+                        mMap.addMarker(
+                            MarkerOptions()
+                                .position(startLocation)
+                                .title("You are here")
+                        )
+                        destinationLocationMarker!!.remove()
                     }
+                    val customerLocation = LatLng(
+                        carRequest.latPickingAddress,
+                        carRequest.lngPickingAddress
+                    )
+                    destinationLocationMarker = mMap.addMarker(
+                        MarkerOptions().position(customerLocation).title("Destination")
+                    )
+                    homeViewModel.getDirectionAndDistance(
+                        startLocation,
+                        customerLocation
+                    )
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(customerLocation))
+                    mMap.animateCamera(CameraUpdateFactory.zoomTo(15f))
                 }
                 .setNegativeButton("Cancel") { dialog, which ->
                     dialog.dismiss()

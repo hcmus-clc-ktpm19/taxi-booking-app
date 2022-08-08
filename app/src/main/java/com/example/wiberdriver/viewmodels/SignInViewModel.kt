@@ -5,9 +5,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.wiberdriver.activities.SigninActivity
 import com.example.wiberdriver.activities.SigninActivity.Companion.accountDriverFromSignIn
+import com.example.wiberdriver.activities.SigninActivity.Companion.driverInfoFromSignIn
 import com.example.wiberdriver.api.AuthService
+import com.example.wiberdriver.api.DriverService
 import com.example.wiberdriver.models.entity.Account
 import com.example.wiberdriver.models.entity.AuthToken
+import com.example.wiberdriver.models.entity.DriverInfo
 import com.example.wiberdriver.models.entity.roleEnum
 import com.example.wiberdriver.models.enums.CarRequestStatus
 import com.example.wiberdriver.states.freeDriverState
@@ -55,6 +58,15 @@ class SignInViewModel : ViewModel() {
                             accountDriverFromSignIn.setRequestState(freeDriverState())
                             accountDriverFromSignIn.driverStatus = CarRequestStatus.FREE.status
                             status.postValue("Success")
+                            try {
+                                driverInfoFromSignIn = DriverService.driverService.getAPIDriverInfoSuspend(
+                                    SigninActivity.phoneNumberLoginFromSignIn,
+                                    "Bearer ${SigninActivity.authDriverTokenFromSignIn.accessToken}"
+                                )
+                            }
+                            catch (e:Exception){
+                                driverInfoFromSignIn = DriverInfo("", "", "", "", roleEnum.DRIVER)
+                            }
                         }
                     }
                 }

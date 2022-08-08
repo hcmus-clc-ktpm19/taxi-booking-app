@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.wiberdriver.databinding.ActivitySigninBinding
 import com.example.wiberdriver.models.entity.Account
 import com.example.wiberdriver.models.entity.AuthToken
+import com.example.wiberdriver.models.entity.DriverInfo
 import com.example.wiberdriver.models.entity.roleEnum
 import com.example.wiberdriver.viewmodels.SignInViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -18,6 +19,7 @@ class SigninActivity : AppCompatActivity() {
         lateinit var authDriverTokenFromSignIn: AuthToken
         lateinit var phoneNumberLoginFromSignIn: String
         lateinit var accountDriverFromSignIn : Account
+        lateinit var driverInfoFromSignIn: DriverInfo
     }
 
 

@@ -5,11 +5,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.wiberdriver.activities.SigninActivity
+import com.example.wiberdriver.activities.SigninActivity.Companion.driverInfoFromSignIn
 import com.example.wiberdriver.api.AuthService
 import com.example.wiberdriver.api.DriverService
 import com.example.wiberdriver.models.entity.AuthToken
 import com.example.wiberdriver.models.entity.DriverInfo
 import com.example.wiberdriver.models.entity.roleEnum
+import com.example.wiberdriver.models.enums.CarType
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
@@ -32,6 +34,12 @@ class ProfileViewModel: ViewModel() {
 
     val phoneNumberText : LiveData<String> = _phoneNumberText
 
+    private val _carTypeValue = MutableLiveData<String>().apply {
+        value = CarType.FOUR_SEATS.status
+    }
+
+    val carTypeValue : LiveData<String> = _carTypeValue
+
     private val _newPasswordText = MutableLiveData<String>().apply {
         value = ""
     }
@@ -49,8 +57,10 @@ class ProfileViewModel: ViewModel() {
                     if (response.isSuccessful)
                     {
                         Log.i("CallApi", "true")
-                        val customerFromApi = response.body()
-                        _nameText.value = customerFromApi?.name
+                        val driverFromApi = response.body()
+                        driverInfoFromSignIn = driverFromApi!!
+                        _nameText.value = driverFromApi?.name
+                        _carTypeValue.value = driverFromApi?.carType
                     }
                     else
                     {
@@ -65,7 +75,7 @@ class ProfileViewModel: ViewModel() {
             })
     }
     var editProfileStatus = MutableLiveData<String>()
-    fun startEditingProfile(passWordString : String, nameString : String) {
+    fun startEditingProfile(passWordString : String, nameString : String, carType: String) {
         if (nameString.isNotEmpty()) {
             GlobalScope.launch {
                 val accountDetail = AuthService.authService.getAccountDetail(
@@ -82,7 +92,7 @@ class ProfileViewModel: ViewModel() {
                             )
                             val customerUpdate = DriverInfo(
                                 accountDetail.id, SigninActivity.phoneNumberLoginFromSignIn,
-                                nameString, roleEnum.CUSTOMER
+                                nameString, carType, roleEnum.CUSTOMER
                             )
                             updateDriverInfo(customerUpdate)
                         } catch (e: Exception) {
@@ -93,7 +103,7 @@ class ProfileViewModel: ViewModel() {
                     } else {
                         val customerUpdate = DriverInfo(
                             accountDetail.id, SigninActivity.phoneNumberLoginFromSignIn,
-                            nameString, roleEnum.CUSTOMER
+                            nameString, carType, roleEnum.CUSTOMER
                         )
                         updateDriverInfo(customerUpdate)
                     }
