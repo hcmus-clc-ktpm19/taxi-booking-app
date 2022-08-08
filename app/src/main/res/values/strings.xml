@@ -31,4 +31,6 @@
     <string name="name_label">Name</string>
     <string name="new_password">New password</string>
     <string name="total_balance">Total Balance</string>
+    <string name="seats4">4 seats</string>
+    <string name="seats7">7 seats</string>
 </resources>
