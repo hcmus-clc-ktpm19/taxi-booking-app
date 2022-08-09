@@ -101,11 +101,11 @@ class ProfileViewModel: ViewModel() {
                             )
                         }
                     } else {
-                        val customerUpdate = DriverInfo(
+                        val driverUpdate = DriverInfo(
                             accountDetail.id, SigninActivity.phoneNumberLoginFromSignIn,
-                            nameString, carType, roleEnum.CUSTOMER
+                            nameString, carType, roleEnum.DRIVER
                         )
-                        updateDriverInfo(customerUpdate)
+                        updateDriverInfo(driverUpdate)
                     }
 
                 } else
