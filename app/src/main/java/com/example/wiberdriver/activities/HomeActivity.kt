@@ -6,8 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.widget.Button
 import android.widget.LinearLayout
@@ -19,13 +17,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.wiberdriver.R
 import com.example.wiberdriver.activities.SigninActivity.Companion.accountDriverFromSignIn
-import com.example.wiberdriver.activities.SigninActivity.Companion.authDriverTokenFromSignIn
 import com.example.wiberdriver.activities.SigninActivity.Companion.driverInfoFromSignIn
-import com.example.wiberdriver.activities.SigninActivity.Companion.phoneNumberLoginFromSignIn
-import com.example.wiberdriver.api.DriverService
 import com.example.wiberdriver.databinding.ActivityHomeBinding
 import com.example.wiberdriver.models.entity.CarRequest
-import com.example.wiberdriver.models.entity.DriverInfo
 import com.example.wiberdriver.models.enums.CarRequestStatus
 import com.example.wiberdriver.utils.Const
 import com.example.wiberdriver.utils.Const.TAG
@@ -45,13 +39,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import ua.naiksoftware.stomp.Stomp
-import ua.naiksoftware.stomp.dto.StompCommand
-import ua.naiksoftware.stomp.dto.StompHeader
 import ua.naiksoftware.stomp.dto.StompMessage
 import java.util.*
 
@@ -223,6 +213,16 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                 "Accept car request successfully" -> {
                     Toast.makeText(this, "Accept the request successfully", Toast.LENGTH_SHORT).show()
                     bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                    // after accept the request, driver will send his location to customer/server
+                    val jsonObject = JSONObject()
+                    try {
+                        jsonObject.put("fromUserId", driverInfoFromSignIn.id)
+                        jsonObject.put("toCarRequestId", carRequest.id)
+                        jsonObject.put("message", "This is driver location")
+                    } catch (e: JSONException) {
+                        e.printStackTrace()
+                    }
+                    stompClient.send(Const.chat, jsonObject.toString()).subscribe()
                 }
                 else -> {
                     Toast.makeText(this, "Accept the request failed", Toast.LENGTH_SHORT).show()
