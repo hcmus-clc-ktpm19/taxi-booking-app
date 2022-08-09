@@ -4,4 +4,5 @@ enum class CarRequestStatus (val status: String){
     FREE("FREE"),
     WAITING("WAITING"),
     ACCEPTED("ACCEPTED"),
+    FINISHED("FINISHED"),
 }

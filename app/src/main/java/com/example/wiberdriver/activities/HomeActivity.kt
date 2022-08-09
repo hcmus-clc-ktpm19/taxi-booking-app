@@ -159,8 +159,8 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                                     if(bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED){
                                         fromLayout.editText?.setText(carRequest.pickingAddress)
                                         toWhereLayout.editText?.setText(carRequest.arrivingAddress)
-                                        distanceLayout.editText?.setText("Not yet")
-                                        moneyLayout.editText?.setText("Not yet")
+                                        distanceLayout.editText?.setText(carRequest.distance.toString() + "m")
+                                        moneyLayout.editText?.setText(carRequest.price.toString() + "VND")
                                         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
                                     }
                                 }
@@ -185,6 +185,9 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                     dialog.dismiss()
                     accountDriverFromSignIn.nextStatusRequest()
                     carRequest.status = CarRequestStatus.ACCEPTED.name
+                    carRequest.driverId = driverInfoFromSignIn.id
+                    carRequest.driverName = driverInfoFromSignIn.name
+                    carRequest.driverPhone = driverInfoFromSignIn.phone
                     homeViewModel.acceptTheCarRequest(carRequest)
                     if (destinationLocationMarker != null) {
                         mMap.clear()
