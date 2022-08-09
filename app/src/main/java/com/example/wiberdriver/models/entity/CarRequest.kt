@@ -9,6 +9,7 @@ class CarRequest(
     var customerPhone: String,
     var driverId: String?,
     var driverName: String?,
+    var driverPhone: String?,
     var pickingAddress: String,
     var arrivingAddress: String,
     var lngPickingAddress: Double,
