@@ -39,11 +39,15 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import ua.naiksoftware.stomp.Stomp
+import ua.naiksoftware.stomp.StompClient
 import ua.naiksoftware.stomp.dto.StompMessage
-import java.util.*
 
 
 class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -208,21 +212,14 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                 .show()
         }
 
+
         val acceptCarRequestStatusObserver = Observer<String>{ status ->
             when(status){
                 "Accept car request successfully" -> {
                     Toast.makeText(this, "Accept the request successfully", Toast.LENGTH_SHORT).show()
                     bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
                     // after accept the request, driver will send his location to customer/server
-                    val jsonObject = JSONObject()
-                    try {
-                        jsonObject.put("fromUserId", driverInfoFromSignIn.id)
-                        jsonObject.put("toCarRequestId", carRequest.id)
-                        jsonObject.put("message", "This is driver location")
-                    } catch (e: JSONException) {
-                        e.printStackTrace()
-                    }
-                    stompClient.send(Const.chat, jsonObject.toString()).subscribe()
+                    homeViewModel.sendLocationToCustomer(this, stompClient, driverInfoFromSignIn.id, carRequest.id, fusedLocationProviderClient)
                 }
                 else -> {
                     Toast.makeText(this, "Accept the request failed", Toast.LENGTH_SHORT).show()
