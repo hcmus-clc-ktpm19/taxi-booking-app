@@ -43,6 +43,12 @@
             android:layout_height="match_parent"
             android:layout_marginTop="62dp" />
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_height="wrap_content"
+            android:id="@+id/testSend"/>
+
         <include layout="@layout/bottom_sheet_request" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

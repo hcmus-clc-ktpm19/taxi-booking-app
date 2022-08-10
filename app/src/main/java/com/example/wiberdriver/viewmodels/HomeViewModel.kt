@@ -1,24 +1,30 @@
 package com.example.wiberdriver.viewmodels
 
-import android.location.Geocoder
+import android.os.Handler
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.wiberdriver.activities.HomeActivity
 import com.example.wiberdriver.activities.SigninActivity
 import com.example.wiberdriver.api.CarRequestService
-import com.example.wiberdriver.api.DriverService
 import com.example.wiberdriver.api.RouteService
 import com.example.wiberdriver.models.entity.CarRequest
-import com.example.wiberdriver.models.entity.DriverInfo
-import com.example.wiberdriver.models.enums.CarRequestStatus
+import com.example.wiberdriver.utils.Const
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import ua.naiksoftware.stomp.StompClient
 
 class HomeViewModel : ViewModel() {
 
@@ -98,4 +104,34 @@ class HomeViewModel : ViewModel() {
             })
     }
 
+    private val handler: Handler = Handler()
+    fun sendLocationToCustomer(
+        homeActivity: HomeActivity, stompClient: StompClient, idDriver: String,
+        idCarRequest: String?,
+        locationProvider: FusedLocationProviderClient
+    ) {
+        GlobalScope.launch {
+            val dispatcher = this.coroutineContext
+            CoroutineScope(dispatcher).launch {
+                while (true)
+                {
+                    locationProvider.lastLocation.addOnSuccessListener { location ->
+                        if (location != null)
+                        {
+                            val jsonObject = JSONObject()
+                            try {
+                                jsonObject.put("latDriver", location.latitude)
+                                jsonObject.put("lngDriver", location.longitude)
+                                jsonObject.put("toCarRequestId", idCarRequest)
+                            } catch (e: JSONException) {
+                                e.printStackTrace()
+                            }
+                            stompClient.send(Const.chat, jsonObject.toString()).subscribe()
+                        }
+                    }
+                    delay(200)
+                }
+            }
+        }
+    }
 }
