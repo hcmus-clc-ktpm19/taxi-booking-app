@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -39,14 +40,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.json.JSONException
 import org.json.JSONObject
 import ua.naiksoftware.stomp.Stomp
-import ua.naiksoftware.stomp.StompClient
 import ua.naiksoftware.stomp.dto.StompMessage
 
 
@@ -148,7 +144,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                                 latCustomer, lngCustomer, results
                             )
                             val distance = results[0]
-                            if (distance < 1000.0 && accountDriverFromSignIn.isFree() && driverInfoFromSignIn.carType.equals(carRequest.carType)) {
+                            if (distance < 1500.0 && accountDriverFromSignIn.isFree() && driverInfoFromSignIn.carType.equals(carRequest.carType)) {
                                 if (!this.isFinishing) {
                                     if(bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED){
                                         fromLayout.editText?.setText(carRequest.pickingAddress)
@@ -219,7 +215,10 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                     Toast.makeText(this, "Accept the request successfully", Toast.LENGTH_SHORT).show()
                     bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
                     // after accept the request, driver will send his location to customer/server
-                    homeViewModel.sendLocationToCustomer(this, stompClient, driverInfoFromSignIn.id, carRequest.id, fusedLocationProviderClient)
+                    homeViewModel.sendLocationToCustomer(stompClient, carRequest.id, carRequest.latPickingAddress, carRequest.lngPickingAddress, fusedLocationProviderClient)
+                }
+                "Finish trip" -> {
+                    Toast.makeText(this, "Finish trip", Toast.LENGTH_SHORT).show()
                 }
                 else -> {
                     Toast.makeText(this, "Accept the request failed", Toast.LENGTH_SHORT).show()
@@ -227,6 +226,53 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
         homeViewModel.acceptCarRequestStatus.observe(this, acceptCarRequestStatusObserver)
+
+        val statusPickCustomerObserver = Observer<Boolean>{ status ->
+            when(status){
+                true -> {
+                    binding.pickCustomerBtn.visibility = View.VISIBLE
+                }
+                else -> {
+                    binding.pickCustomerBtn.visibility = View.GONE
+                }
+            }
+        }
+        homeViewModel.statusPickCustomer.observe(this, statusPickCustomerObserver)
+
+        binding.pickCustomerBtn.setOnClickListener {
+            homeViewModel.setFlagBreakLoopSendCustomer(true)
+            binding.pickCustomerBtn.visibility = View.GONE
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null)
+                {
+                    mMap.clear()
+                    homeViewModel.getDirectionAndDistance(LatLng(location.latitude, location.longitude), LatLng(carRequest.latArrivingAddress, carRequest.lngArrivingAddress))
+
+                    homeViewModel.calculateToDestination(carRequest.latArrivingAddress, carRequest.lngArrivingAddress, fusedLocationProviderClient, stompClient, carRequest.id)
+                }
+            }
+        }
+
+        binding.finishedRequestBtn.setOnClickListener {
+            homeViewModel.setFlagBreakLoopCalculateDistance(true)
+            binding.finishedRequestBtn.visibility = View.GONE
+            accountDriverFromSignIn.nextStatusRequest()
+            carRequest.status = CarRequestStatus.FINISHED.status
+            homeViewModel.acceptTheCarRequest(carRequest)
+        }
+
+        val statusFinishTripObserver = Observer<Boolean>{ status ->
+            when(status){
+                true -> {
+                    binding.finishedRequestBtn.visibility = View.VISIBLE
+                }
+                else -> {
+                    binding.finishedRequestBtn.visibility = View.GONE
+                }
+            }
+        }
+        homeViewModel.statusFinishTrip.observe(this, statusFinishTripObserver)
+
     }
 
     @SuppressLint("MissingPermission")

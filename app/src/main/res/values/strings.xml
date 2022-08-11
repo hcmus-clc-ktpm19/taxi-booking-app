@@ -32,5 +32,7 @@
     <string name="new_password">New password</string>
     <string name="total_balance">Total Balance</string>
     <string name="seats4">4 seats</string>
-    <string name="seats7">7 seats</string>
+    <string name="seats7">7 seats</string>Pick customer
+    <string name="pick_customer">Pick customer</string>
+    <string name="finish_request">Finish request</string>
 </resources>

@@ -43,6 +43,28 @@
             android:layout_height="match_parent"
             android:layout_marginTop="62dp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/primary_color"
+            android:text="@string/pick_customer"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="70dp"
+            android:visibility="gone"
+            android:id="@+id/pickCustomerBtn"
+            />
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/primary_color"
+            android:text="@string/finish_request"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="70dp"
+            android:visibility="gone"
+            android:id="@+id/finishedRequestBtn"
+            />
+
         <include layout="@layout/bottom_sheet_request" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
