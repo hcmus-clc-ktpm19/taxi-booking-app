@@ -144,7 +144,7 @@ class HomeViewModel : ViewModel() {
                                     latCustomer, lngCustomer, results
                                 )
                                 val distance = results[0]
-                                if (distance < 50.0)
+                                if (distance < 150.0)
                                     statusPickCustomer.postValue(true)
                                 else
                                     statusPickCustomer.postValue(false)
@@ -194,7 +194,7 @@ class HomeViewModel : ViewModel() {
                                     statusFinishTrip.postValue(true)
                                 else
                                     statusFinishTrip.postValue(false)
-                                Log.i("taisao", distance.toString())
+                                Log.i("taisao", statusFinishTrip.value.toString())
                             } catch (e: JSONException) {
                                 e.printStackTrace()
                             }
