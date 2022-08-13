@@ -2,12 +2,17 @@ package com.example.wiberdriver.activities
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Address
+import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -46,6 +51,8 @@ import org.json.JSONObject
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
 import ua.naiksoftware.stomp.dto.StompMessage
+import java.io.IOException
+import java.util.*
 
 
 class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -186,11 +193,6 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                     homeViewModel.acceptTheCarRequest(carRequest)
                     if (destinationLocationMarker != null) {
                         mMap.clear()
-                        mMap.addMarker(
-                            MarkerOptions()
-                                .position(startLocation)
-                                .title("You are here")
-                        )
                         destinationLocationMarker!!.remove()
                     }
                     val customerLocation = LatLng(
@@ -250,16 +252,77 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
                 if (location != null)
                 {
-                    mMap.clear()
-                    homeViewModel.getDirectionAndDistance(LatLng(location.latitude, location.longitude), LatLng(carRequest.latArrivingAddress, carRequest.lngArrivingAddress))
+                    if (homeViewModel.requestByCallCenter.value == false)
+                    {
+                        mMap.clear()
+                        homeViewModel.getDirectionAndDistance(LatLng(location.latitude, location.longitude), LatLng(
+                            carRequest.latArrivingAddress!!, carRequest.lngArrivingAddress!!
+                        ))
 
-                    homeViewModel.calculateToDestination(carRequest.latArrivingAddress, carRequest.lngArrivingAddress, fusedLocationProviderClient, stompClient, carRequest.id)
+                        homeViewModel.calculateToDestination(carRequest.latArrivingAddress!!,
+                            carRequest.lngArrivingAddress!!, fusedLocationProviderClient, stompClient, carRequest.id)
+                    }
+                    else
+                    {
+                        mMap.clear()
+                        startLocation = LatLng(location.latitude, location.longitude)
+                        binding.destinationInputLayout.visibility = View.VISIBLE
+                    }
                 }
             }
         }
 
+        binding.destinationInputLayout.editText?.setOnKeyListener(View.OnKeyListener { textView, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN) {
+
+                val destination = binding.destinationInputLayout.editText!!.text
+                val coder = Geocoder(applicationContext, Locale.getDefault())
+                try {
+                    val adresses: ArrayList<Address> =
+                        coder.getFromLocationName(destination.toString(), 1) as ArrayList<Address>
+                    if (adresses.isNotEmpty()) {
+                        val location: Address = adresses[0]
+                        val destinatioLocation = LatLng(location.latitude, location.longitude)
+                        carRequest.latArrivingAddress = location.latitude
+                        carRequest.lngArrivingAddress = location.longitude
+                        if (destinationLocationMarker != null) {
+                            mMap.clear()
+                            destinationLocationMarker!!.remove()
+                        }
+                        //Put marker on map on that LatLng
+                        destinationLocationMarker = mMap.addMarker(
+                            MarkerOptions().position(destinatioLocation).title("Destination")
+                        )
+                        homeViewModel.getDirectionAndDistance(
+                            startLocation,
+                            destinatioLocation
+                        )
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(destinatioLocation))
+                        mMap.animateCamera(CameraUpdateFactory.zoomTo(15f))
+                        binding.confirmDestination.visibility = View.VISIBLE
+                    } else
+                        Toast.makeText(this, "No address found", Toast.LENGTH_LONG).show()
+                } catch (e: IOException) {
+                    Log.i("error", e.toString())
+                }
+                hideKeyboad()
+                return@OnKeyListener true
+            }
+            false
+        })
+
+        binding.confirmDestination.setOnClickListener {
+            binding.destinationInputLayout.visibility = View.GONE
+            binding.confirmDestination.visibility = View.GONE
+            homeViewModel.calculateToDestination(
+                carRequest.latArrivingAddress!!, carRequest.lngArrivingAddress!!,
+            fusedLocationProviderClient, stompClient, carRequest.id)
+        }
+
         binding.finishedRequestBtn.setOnClickListener {
+            mMap.clear()
             homeViewModel.setFlagBreakLoopCalculateDistance(true)
+            homeViewModel.setRequestByCallCenter(false)
             binding.finishedRequestBtn.visibility = View.GONE
             accountDriverFromSignIn.nextStatusRequest()
             carRequest.status = CarRequestStatus.FINISHED.status
@@ -299,6 +362,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             }
         }
     }
+
     fun subscribeToTopic(stompClient: StompClient) {
         Log.i(TAG, "Subscribe broadcast endpoint to receive response")
         stompClient.topic(Const.broadcastResponse).subscribe { stompMessage: StompMessage ->
@@ -310,23 +374,38 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                 try {
                     if (!driverInfoFromSignIn.name.equals("") && !driverInfoFromSignIn.id.equals(""))
                     {
-                        val latCustomer = carRequest.latPickingAddress
-                        val lngCustomer = carRequest.lngPickingAddress
-                        if (latCustomer != null && lngCustomer != null) {
-                            val results = FloatArray(1)
-                            Location.distanceBetween(
-                                startLocation.latitude, startLocation.longitude,
-                                latCustomer, lngCustomer, results
-                            )
-                            val distance = results[0]
-                            if (distance < 1500.0 && accountDriverFromSignIn.isFree() && driverInfoFromSignIn.carType.equals(carRequest.carType)) {
-                                if (!this.isFinishing) {
-                                    if(bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED){
-                                        fromLayout.editText?.setText(carRequest.pickingAddress)
-                                        toWhereLayout.editText?.setText(carRequest.arrivingAddress)
-                                        distanceLayout.editText?.setText(carRequest.distance.toString() + "m")
-                                        moneyLayout.editText?.setText(carRequest.price.toString() + "VND")
-                                        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                        fusedLocationProviderClient.lastLocation.addOnSuccessListener { location ->
+                            startLocation = LatLng(location.latitude, location.longitude)
+                            val latCustomer = carRequest.latPickingAddress
+                            val lngCustomer = carRequest.lngPickingAddress
+                            if (latCustomer != null && lngCustomer != null) {
+                                val results = FloatArray(1)
+                                Location.distanceBetween(
+                                    startLocation.latitude, startLocation.longitude,
+                                    latCustomer, lngCustomer, results
+                                )
+                                val distance = results[0]
+                                if (distance < 1500.0 && accountDriverFromSignIn.isFree() && driverInfoFromSignIn.carType.equals(carRequest.carType)) {
+                                    if (!this.isFinishing) {
+                                        if(bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED){
+                                            if (!carRequest.arrivingAddress.isNullOrEmpty())
+                                            {
+                                                fromLayout.editText?.setText(carRequest.pickingAddress)
+                                                toWhereLayout.editText?.setText(carRequest.arrivingAddress)
+                                                distanceLayout.editText?.setText(carRequest.distance.toString() + "m")
+                                                moneyLayout.editText?.setText(carRequest.price.toString() + "VND")
+                                                bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                                            }
+                                            else
+                                            {
+                                                homeViewModel.setRequestByCallCenter(true)
+                                                fromLayout.editText?.setText(carRequest.pickingAddress)
+                                                toWhereLayout.editText?.setText("")
+                                                distanceLayout.editText?.setText("0m")
+                                                moneyLayout.editText?.setText("0VND")
+                                                bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -370,13 +449,16 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                     startLocation = LatLng(location.latitude, location.longitude)
                     Log.i("info", "current location: $currentLatLng")
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15f))
-                    mMap.addMarker(
-                        com.google.android.gms.maps.model.MarkerOptions()
-                            .position(currentLatLng)
-                            .title("You are here")
-                    )
                 }
             }
+        }
+    }
+
+    private fun hideKeyboad() {
+        val view: View? = this.currentFocus
+        if (view != null) {
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
 }
