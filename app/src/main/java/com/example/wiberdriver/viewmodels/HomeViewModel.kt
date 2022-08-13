@@ -33,6 +33,10 @@ class HomeViewModel : ViewModel() {
     }
     val geoPoint: LiveData<ArrayList<LatLng>> = _geoPoint
 
+    private val _requestByCallCenter = MutableLiveData<Boolean>().apply {
+        value = false
+    }
+    val requestByCallCenter: LiveData<Boolean> = _requestByCallCenter
 
     var acceptCarRequestStatus = MutableLiveData<String>()
     fun acceptTheCarRequest(carRequest: CarRequest) {
@@ -226,5 +230,10 @@ class HomeViewModel : ViewModel() {
     fun setFlagBreakLoopCalculateDistance(temp : Boolean)
     {
         _flagBreakLoopCalculateDistance.value = temp
+    }
+
+    fun setRequestByCallCenter(temp : Boolean)
+    {
+        _requestByCallCenter.value = temp
     }
 }
