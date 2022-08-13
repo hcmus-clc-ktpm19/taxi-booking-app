@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -43,6 +44,7 @@ import com.google.gson.Gson
 import org.json.JSONException
 import org.json.JSONObject
 import ua.naiksoftware.stomp.Stomp
+import ua.naiksoftware.stomp.StompClient
 import ua.naiksoftware.stomp.dto.StompMessage
 
 
@@ -54,6 +56,11 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var startLocation: LatLng
     private lateinit var carRequest: CarRequest
     internal var destinationLocationMarker: Marker? = null
+    private var isOnline: Boolean = true
+    private lateinit var fromLayout: TextInputLayout
+    private lateinit var toWhereLayout: TextInputLayout
+    private lateinit var distanceLayout: TextInputLayout
+    private lateinit var moneyLayout: TextInputLayout
 
     // bottom sheet
     private lateinit var bottomLayout :LinearLayout
@@ -68,10 +75,10 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
 
         bottomLayout = findViewById(R.id.bottom_sheet_layout)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomLayout)
-        val fromLayout = bottomLayout.findViewById<TextInputLayout>(R.id.fromInputLayout)
-        val toWhereLayout = bottomLayout.findViewById<TextInputLayout>(R.id.toWhereInputLayout)
-        val distanceLayout = bottomLayout.findViewById<TextInputLayout>(R.id.distanceToGo)
-        val moneyLayout = bottomLayout.findViewById<TextInputLayout>(R.id.moneyToPay)
+        fromLayout = bottomLayout.findViewById<TextInputLayout>(R.id.fromInputLayout)
+        toWhereLayout = bottomLayout.findViewById<TextInputLayout>(R.id.toWhereInputLayout)
+        distanceLayout = bottomLayout.findViewById<TextInputLayout>(R.id.distanceToGo)
+        moneyLayout = bottomLayout.findViewById<TextInputLayout>(R.id.moneyToPay)
         val acceptRequestBtn = bottomLayout.findViewById<Button>(R.id.accept_button)
         val rejectRequestBtn = bottomLayout.findViewById<Button>(R.id.reject_button)
 
@@ -104,9 +111,6 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             drawerLayout.closeDrawers()
             true
         }
-//        homeViewModel.carRequestValue.observe(this){
-//            carRequest = it
-//        }
 
         //map
         val supportMapFragment: SupportMapFragment =
@@ -124,44 +128,45 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         Toast.makeText(this, "Start connecting to server", Toast.LENGTH_SHORT).show()
         // Connect to WebSocket server
         stompClient.connect()
+        this.subscribeToTopic(stompClient)
+//        Log.i(TAG, "Subscribe broadcast endpoint to receive response")
+//        stompClient.topic(Const.broadcastResponse).subscribe { stompMessage: StompMessage ->
+//            val jsonObject = JSONObject(stompMessage.payload)
+//            carRequest = Gson().fromJson(jsonObject.getString("carRequestDto"), CarRequest::class.java)
+//            Log.i(TAG, "Receive: " + stompMessage.payload)
+//            Log.i("convert", carRequest.id!! + " " + carRequest.customerId + " " + carRequest.arrivingAddress)
+//            runOnUiThread {
+//                try {
+//                    if (!driverInfoFromSignIn.name.equals("") && !driverInfoFromSignIn.id.equals(""))
+//                    {
+//                        val latCustomer = carRequest.latPickingAddress
+//                        val lngCustomer = carRequest.lngPickingAddress
+//                        if (latCustomer != null && lngCustomer != null) {
+//                            val results = FloatArray(1)
+//                            Location.distanceBetween(
+//                                startLocation.latitude, startLocation.longitude,
+//                                latCustomer, lngCustomer, results
+//                            )
+//                            val distance = results[0]
+//                            if (distance < 1500.0 && accountDriverFromSignIn.isFree() && driverInfoFromSignIn.carType.equals(carRequest.carType)) {
+//                                if (!this.isFinishing) {
+//                                    if(bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED){
+//                                        fromLayout.editText?.setText(carRequest.pickingAddress)
+//                                        toWhereLayout.editText?.setText(carRequest.arrivingAddress)
+//                                        distanceLayout.editText?.setText(carRequest.distance.toString() + "m")
+//                                        moneyLayout.editText?.setText(carRequest.price.toString() + "VND")
+//                                        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                } catch (e: JSONException) {
+//                    e.printStackTrace()
+//                }
+//            }
+//        }
 
-        Log.i(Const.TAG, "Subscribe broadcast endpoint to receive response")
-        stompClient.topic(Const.broadcastResponse).subscribe { stompMessage: StompMessage ->
-            val jsonObject = JSONObject(stompMessage.payload)
-            carRequest = Gson().fromJson(jsonObject.getString("carRequestDto"), CarRequest::class.java)
-            Log.i(TAG, "Receive: " + stompMessage.payload)
-            Log.i("convert", carRequest.id!! + " " + carRequest.customerId + " " + carRequest.arrivingAddress)
-            runOnUiThread {
-                try {
-                    if (!driverInfoFromSignIn.name.equals("") && !driverInfoFromSignIn.id.equals(""))
-                    {
-                        val latCustomer = carRequest.latPickingAddress
-                        val lngCustomer = carRequest.lngPickingAddress
-                        if (latCustomer != null && lngCustomer != null) {
-                            val results = FloatArray(1)
-                            Location.distanceBetween(
-                                startLocation.latitude, startLocation.longitude,
-                                latCustomer, lngCustomer, results
-                            )
-                            val distance = results[0]
-                            if (distance < 1500.0 && accountDriverFromSignIn.isFree() && driverInfoFromSignIn.carType.equals(carRequest.carType)) {
-                                if (!this.isFinishing) {
-                                    if(bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED){
-                                        fromLayout.editText?.setText(carRequest.pickingAddress)
-                                        toWhereLayout.editText?.setText(carRequest.arrivingAddress)
-                                        distanceLayout.editText?.setText(carRequest.distance.toString() + "m")
-                                        moneyLayout.editText?.setText(carRequest.price.toString() + "VND")
-                                        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } catch (e: JSONException) {
-                    e.printStackTrace()
-                }
-            }
-        }
 
         rejectRequestBtn.setOnClickListener {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
@@ -273,6 +278,65 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         homeViewModel.statusFinishTrip.observe(this, statusFinishTripObserver)
 
+        // status of driver
+        val onlineSwitchMenuItem = navigationView.menu.findItem(R.id.nav_status)
+        val onlineSwitchBtn = onlineSwitchMenuItem.actionView as SwitchCompat
+        onlineSwitchBtn.isChecked = isOnline // default is online
+        onlineSwitchBtn.setOnClickListener { _ ->
+            if (onlineSwitchBtn.isChecked) {
+                isOnline = true
+                onlineSwitchMenuItem.title = resources.getString(R.string.online_status)
+                onlineSwitchMenuItem.icon = resources.getDrawable(R.drawable.ic_baseline_notifications_active_24)
+                stompClient.connect()
+                this.subscribeToTopic(stompClient)
+                Toast.makeText(this, "You are online", Toast.LENGTH_SHORT).show()
+            } else {
+                isOnline = false
+                onlineSwitchMenuItem.title = resources.getString(R.string.offline_status)
+                onlineSwitchMenuItem.icon = resources.getDrawable(R.drawable.ic_baseline_notifications_off_24)
+                stompClient.disconnect()
+                Toast.makeText(this, "You are offline", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    fun subscribeToTopic(stompClient: StompClient) {
+        Log.i(TAG, "Subscribe broadcast endpoint to receive response")
+        stompClient.topic(Const.broadcastResponse).subscribe { stompMessage: StompMessage ->
+            val jsonObject = JSONObject(stompMessage.payload)
+            carRequest = Gson().fromJson(jsonObject.getString("carRequestDto"), CarRequest::class.java)
+            Log.i(TAG, "Receive: " + stompMessage.payload)
+            Log.i("convert", carRequest.id!! + " " + carRequest.customerId + " " + carRequest.arrivingAddress)
+            runOnUiThread {
+                try {
+                    if (!driverInfoFromSignIn.name.equals("") && !driverInfoFromSignIn.id.equals(""))
+                    {
+                        val latCustomer = carRequest.latPickingAddress
+                        val lngCustomer = carRequest.lngPickingAddress
+                        if (latCustomer != null && lngCustomer != null) {
+                            val results = FloatArray(1)
+                            Location.distanceBetween(
+                                startLocation.latitude, startLocation.longitude,
+                                latCustomer, lngCustomer, results
+                            )
+                            val distance = results[0]
+                            if (distance < 1500.0 && accountDriverFromSignIn.isFree() && driverInfoFromSignIn.carType.equals(carRequest.carType)) {
+                                if (!this.isFinishing) {
+                                    if(bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED){
+                                        fromLayout.editText?.setText(carRequest.pickingAddress)
+                                        toWhereLayout.editText?.setText(carRequest.arrivingAddress)
+                                        distanceLayout.editText?.setText(carRequest.distance.toString() + "m")
+                                        moneyLayout.editText?.setText(carRequest.price.toString() + "VND")
+                                        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch (e: JSONException) {
+                    e.printStackTrace()
+                }
+            }
+        }
     }
 
     @SuppressLint("MissingPermission")
