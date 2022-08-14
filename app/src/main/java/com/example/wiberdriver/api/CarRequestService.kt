@@ -12,6 +12,9 @@ interface CarRequestService {
     @POST("car-request/create-or-update")
     fun requestCarByAPI(@Body carRequestInfo: CarRequest, @Header("Authorization") accessToken : String): Call<ResponseBody>
 
+    @POST("car-request/update-arriving-address")
+    fun updateArrivingByAPI(@Body carRequestInfo: CarRequest, @Header("Authorization") accessToken : String): Call<ResponseBody>
+
     companion object {
         private var url: String = "http://10.0.2.2:8080/api/v1/"
         val carRequestService = Retrofit.Builder()

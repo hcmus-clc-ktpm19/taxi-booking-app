@@ -37,4 +37,6 @@
     <string name="seats7">7 seats</string>Pick customer
     <string name="pick_customer">Pick customer</string>
     <string name="finish_request">Finish request</string>
+
+    <string name="thank_you_finish_trip">Trip is finished</string>
 </resources>

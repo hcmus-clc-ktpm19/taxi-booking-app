@@ -136,44 +136,6 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
         // Connect to WebSocket server
         stompClient.connect()
         this.subscribeToTopic(stompClient)
-//        Log.i(TAG, "Subscribe broadcast endpoint to receive response")
-//        stompClient.topic(Const.broadcastResponse).subscribe { stompMessage: StompMessage ->
-//            val jsonObject = JSONObject(stompMessage.payload)
-//            carRequest = Gson().fromJson(jsonObject.getString("carRequestDto"), CarRequest::class.java)
-//            Log.i(TAG, "Receive: " + stompMessage.payload)
-//            Log.i("convert", carRequest.id!! + " " + carRequest.customerId + " " + carRequest.arrivingAddress)
-//            runOnUiThread {
-//                try {
-//                    if (!driverInfoFromSignIn.name.equals("") && !driverInfoFromSignIn.id.equals(""))
-//                    {
-//                        val latCustomer = carRequest.latPickingAddress
-//                        val lngCustomer = carRequest.lngPickingAddress
-//                        if (latCustomer != null && lngCustomer != null) {
-//                            val results = FloatArray(1)
-//                            Location.distanceBetween(
-//                                startLocation.latitude, startLocation.longitude,
-//                                latCustomer, lngCustomer, results
-//                            )
-//                            val distance = results[0]
-//                            if (distance < 1500.0 && accountDriverFromSignIn.isFree() && driverInfoFromSignIn.carType.equals(carRequest.carType)) {
-//                                if (!this.isFinishing) {
-//                                    if(bottomSheetBehavior.state != BottomSheetBehavior.STATE_EXPANDED){
-//                                        fromLayout.editText?.setText(carRequest.pickingAddress)
-//                                        toWhereLayout.editText?.setText(carRequest.arrivingAddress)
-//                                        distanceLayout.editText?.setText(carRequest.distance.toString() + "m")
-//                                        moneyLayout.editText?.setText(carRequest.price.toString() + "VND")
-//                                        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                } catch (e: JSONException) {
-//                    e.printStackTrace()
-//                }
-//            }
-//        }
-
 
         rejectRequestBtn.setOnClickListener {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
@@ -184,30 +146,37 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                 .setMessage("Are you sure to accept this request?")
                 .setPositiveButton("OK") { dialog, which ->
                     // send rest api to server that accept the car request
-                    dialog.dismiss()
-                    accountDriverFromSignIn.nextStatusRequest()
-                    carRequest.status = CarRequestStatus.ACCEPTED.name
-                    carRequest.driverId = driverInfoFromSignIn.id
-                    carRequest.driverName = driverInfoFromSignIn.name
-                    carRequest.driverPhone = driverInfoFromSignIn.phone
-                    homeViewModel.acceptTheCarRequest(carRequest)
-                    if (destinationLocationMarker != null) {
-                        mMap.clear()
-                        destinationLocationMarker!!.remove()
+                    if (homeViewModel.requestByCallCenter.value == true && homeViewModel.routeCallCenter.value == true)
+                    {
+                        homeViewModel.updateArrivingCarRequest(carRequest)
                     }
-                    val customerLocation = LatLng(
-                        carRequest.latPickingAddress,
-                        carRequest.lngPickingAddress
-                    )
-                    destinationLocationMarker = mMap.addMarker(
-                        MarkerOptions().position(customerLocation).title("Destination")
-                    )
-                    homeViewModel.getDirectionAndDistance(
-                        startLocation,
-                        customerLocation
-                    )
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(customerLocation))
-                    mMap.animateCamera(CameraUpdateFactory.zoomTo(15f))
+                    else
+                    {
+                        dialog.dismiss()
+                        accountDriverFromSignIn.nextStatusRequest()
+                        carRequest.status = CarRequestStatus.ACCEPTED.name
+                        carRequest.driverId = driverInfoFromSignIn.id
+                        carRequest.driverName = driverInfoFromSignIn.name
+                        carRequest.driverPhone = driverInfoFromSignIn.phone
+                        homeViewModel.acceptTheCarRequest(carRequest)
+                        if (destinationLocationMarker != null) {
+                            mMap.clear()
+                            destinationLocationMarker!!.remove()
+                        }
+                        val customerLocation = LatLng(
+                            carRequest.latPickingAddress,
+                            carRequest.lngPickingAddress
+                        )
+                        destinationLocationMarker = mMap.addMarker(
+                            MarkerOptions().position(customerLocation).title("Destination")
+                        )
+                        homeViewModel.getDirectionAndDistance(
+                            startLocation,
+                            customerLocation
+                        )
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(customerLocation))
+                        mMap.animateCamera(CameraUpdateFactory.zoomTo(15f))
+                    }
                 }
                 .setNegativeButton("Cancel") { dialog, which ->
                     dialog.dismiss()
@@ -215,6 +184,24 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                 .show()
         }
 
+        val updateCarRequestStatusObserver = Observer<String> { status ->
+            when (status) {
+                "Update successfully" -> {
+                    Toast.makeText(this, "Update car request successfully", Toast.LENGTH_SHORT).show()
+                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                    homeViewModel.calculateToDestination(carRequest.latArrivingAddress!!,
+                        carRequest.lngArrivingAddress!!, fusedLocationProviderClient, stompClient, carRequest.id)
+                }
+                "Fail to update" -> {
+                    Toast.makeText(this, "Fail to update car request", Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+
+                }
+            }
+        }
+
+        homeViewModel.updateArrivingCarRequestStatus.observe(this, updateCarRequestStatusObserver)
 
         val acceptCarRequestStatusObserver = Observer<String>{ status ->
             when(status){
@@ -299,7 +286,8 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                         )
                         mMap.moveCamera(CameraUpdateFactory.newLatLng(destinatioLocation))
                         mMap.animateCamera(CameraUpdateFactory.zoomTo(15f))
-                        binding.confirmDestination.visibility = View.VISIBLE
+                        homeViewModel.setRouteStatusCallCenter(true)
+                        homeViewModel.getDirectionAndDistance(startLocation, destinatioLocation)
                     } else
                         Toast.makeText(this, "No address found", Toast.LENGTH_LONG).show()
                 } catch (e: IOException) {
@@ -311,18 +299,32 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             false
         })
 
-        binding.confirmDestination.setOnClickListener {
-            binding.destinationInputLayout.visibility = View.GONE
-            binding.confirmDestination.visibility = View.GONE
-            homeViewModel.calculateToDestination(
-                carRequest.latArrivingAddress!!, carRequest.lngArrivingAddress!!,
-            fusedLocationProviderClient, stompClient, carRequest.id)
+        val routeCallcenterStatusObserver = Observer<Boolean>{ status ->
+            when (status){
+                true -> {
+                    carRequest.arrivingAddress = homeViewModel.arrivingAddressValue.value
+                    carRequest.price = homeViewModel.moneyValue.value!!
+                    carRequest.distance = homeViewModel.distanceValue.value!!
+
+                    fromLayout.editText?.setText(carRequest.pickingAddress)
+                    toWhereLayout.editText?.setText(carRequest.arrivingAddress)
+                    distanceLayout.editText?.setText(carRequest.distance.toString() + "m")
+                    moneyLayout.editText?.setText(carRequest.price.toString() + "VND")
+
+                    bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+                }
+                else -> {
+
+                }
+            }
         }
+        homeViewModel.routeCallCenter.observe(this, routeCallcenterStatusObserver)
 
         binding.finishedRequestBtn.setOnClickListener {
             mMap.clear()
             homeViewModel.setFlagBreakLoopCalculateDistance(true)
             homeViewModel.setRequestByCallCenter(false)
+            homeViewModel.setRouteStatusCallCenter(false)
             binding.finishedRequestBtn.visibility = View.GONE
             accountDriverFromSignIn.nextStatusRequest()
             carRequest.status = CarRequestStatus.FINISHED.status

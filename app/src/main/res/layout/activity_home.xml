@@ -70,18 +70,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/primary_color"
-            android:text="@string/confirm"
-            android:layout_gravity="left"
-            android:layout_marginTop="150dp"
-            android:layout_marginLeft="20dp"
-            android:visibility="gone"
-            android:id="@+id/confirmDestination"
-            />
-
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/primary_color"
             android:text="@string/pick_customer"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="150dp"
