@@ -188,6 +188,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
             when (status) {
                 "Update successfully" -> {
                     Toast.makeText(this, "Update car request successfully", Toast.LENGTH_SHORT).show()
+                    binding.destinationInputLayout.visibility = View.GONE
                     bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
                     homeViewModel.calculateToDestination(carRequest.latArrivingAddress!!,
                         carRequest.lngArrivingAddress!!, fusedLocationProviderClient, stompClient, carRequest.id)
@@ -309,7 +310,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                     fromLayout.editText?.setText(carRequest.pickingAddress)
                     toWhereLayout.editText?.setText(carRequest.arrivingAddress)
                     distanceLayout.editText?.setText(carRequest.distance.toString() + "m")
-                    moneyLayout.editText?.setText(carRequest.price.toString() + "VND")
+                    moneyLayout.editText?.setText(carRequest.price.toInt().toString() + "VND")
 
                     bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
                 }
