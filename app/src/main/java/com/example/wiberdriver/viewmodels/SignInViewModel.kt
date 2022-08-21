@@ -65,7 +65,7 @@ class SignInViewModel : ViewModel() {
                                 )
                             }
                             catch (e:Exception){
-                                driverInfoFromSignIn = DriverInfo("", "", "", "", roleEnum.DRIVER)
+                                driverInfoFromSignIn = DriverInfo("", "", "", "", roleEnum.DRIVER, "")
                             }
                         }
                     }

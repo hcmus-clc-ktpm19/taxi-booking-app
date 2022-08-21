@@ -127,6 +127,7 @@
         android:layout_alignParentBottom="true"
         android:background="@drawable/shapelayout"
         android:gravity="center"
+        android:visibility="gone"
         android:orientation="vertical">
 
         <TextView

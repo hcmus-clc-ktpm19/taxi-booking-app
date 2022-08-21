@@ -158,6 +158,7 @@ class HomeActivity : AppCompatActivity(), OnMapReadyCallback {
                         carRequest.driverId = driverInfoFromSignIn.id
                         carRequest.driverName = driverInfoFromSignIn.name
                         carRequest.driverPhone = driverInfoFromSignIn.phone
+                        carRequest.driverAvatar = driverInfoFromSignIn.avatar
                         homeViewModel.acceptTheCarRequest(carRequest)
                         if (destinationLocationMarker != null) {
                             mMap.clear()

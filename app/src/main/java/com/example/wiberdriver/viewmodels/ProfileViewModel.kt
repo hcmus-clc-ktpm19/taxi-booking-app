@@ -1,5 +1,6 @@
 package com.example.wiberdriver.viewmodels
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -12,13 +13,18 @@ import com.example.wiberdriver.models.entity.AuthToken
 import com.example.wiberdriver.models.entity.DriverInfo
 import com.example.wiberdriver.models.entity.roleEnum
 import com.example.wiberdriver.models.enums.CarType
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.HttpException
 import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ProfileViewModel: ViewModel() {
     private val _nameText = MutableLiveData<String>().apply {
@@ -75,7 +81,7 @@ class ProfileViewModel: ViewModel() {
             })
     }
     var editProfileStatus = MutableLiveData<String>()
-    fun startEditingProfile(passWordString : String, nameString : String, carType: String) {
+    fun startEditingProfile(passWordString : String, nameString : String, carType: String, avatarUrl: String) {
         if (nameString.isNotEmpty()) {
             GlobalScope.launch {
                 val accountDetail = AuthService.authService.getAccountDetail(
@@ -90,11 +96,11 @@ class ProfileViewModel: ViewModel() {
                                 accountDetail.id, accountDetail,
                                 "Bearer ${SigninActivity.authDriverTokenFromSignIn.accessToken}"
                             )
-                            val customerUpdate = DriverInfo(
+                            val driverUpdate = DriverInfo(
                                 accountDetail.id, SigninActivity.phoneNumberLoginFromSignIn,
-                                nameString, carType, roleEnum.CUSTOMER
+                                nameString, carType, roleEnum.CUSTOMER, avatarUrl
                             )
-                            updateDriverInfo(customerUpdate)
+                            updateDriverInfo(driverUpdate)
                         } catch (e: Exception) {
                             editProfileStatus.postValue(
                                 (e as? HttpException)?.response()?.errorBody()?.string()
@@ -103,7 +109,7 @@ class ProfileViewModel: ViewModel() {
                     } else {
                         val driverInfo = DriverInfo(
                             accountDetail.id, SigninActivity.phoneNumberLoginFromSignIn,
-                            nameString, carType, roleEnum.DRIVER
+                            nameString, carType, roleEnum.DRIVER, avatarUrl
                         )
                         updateDriverInfo(driverInfo)
                     }
@@ -141,6 +147,27 @@ class ProfileViewModel: ViewModel() {
                 }
 
             })
+    }
+
+    private var storageRef = Firebase.storage.reference
+    var uploadAvatarStatus = MutableLiveData<String>()
+    fun startUploadingAvatar(imageUri: Uri) {
+       GlobalScope.launch {
+           val formater = SimpleDateFormat("yyyy_MM_dd_HH_mm_ss", Locale.getDefault())
+           val now = Date()
+           val fileName = formater.format(now)
+           var url = ""
+           try {
+               storageRef.child("avatar/${fileName}.jpg").putFile(imageUri).await()
+               val uri = storageRef.child("avatar/${fileName}.jpg").downloadUrl.await()
+               url = uri.toString()
+               Log.i("image-url", "1: ${url}")
+               uploadAvatarStatus.postValue(url)
+           } catch (e: Exception) {
+               e.printStackTrace()
+                uploadAvatarStatus.postValue("Fail")
+           }
+       }
     }
 
 }

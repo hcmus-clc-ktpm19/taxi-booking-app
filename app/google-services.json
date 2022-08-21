@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "131661245638",
+    "project_id": "taxi-app-355514",
+    "storage_bucket": "taxi-app-355514.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:131661245638:android:e9806153ebceab4e4a3bc7",
+        "android_client_info": {
+          "package_name": "com.example.wiberdriver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "131661245638-jf84u6ippu0782a54t8qn4sb24puoiau.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAArZKsaHvfYKM_cgLyA7REde8-XoUSJos"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "131661245638-jf84u6ippu0782a54t8qn4sb24puoiau.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

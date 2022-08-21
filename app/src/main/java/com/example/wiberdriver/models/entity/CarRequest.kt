@@ -10,6 +10,7 @@ class CarRequest(
     var driverId: String?,
     var driverName: String?,
     var driverPhone: String?,
+    var driverAvatar: String?,
     var pickingAddress: String,
     var arrivingAddress: String?,
     var lngPickingAddress: Double,

@@ -9,7 +9,8 @@ class DriverInfo  (
     var phone: String,
     var name : String,
     var carType: String,
-    var role : roleEnum = roleEnum.DRIVER
+    var role : roleEnum = roleEnum.DRIVER,
+    var avatar: String?,
 ){
 
 
